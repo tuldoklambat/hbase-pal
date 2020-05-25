@@ -81,6 +81,6 @@ byte[] setColumnValue(HBaseColumnInfo hBaseColumnInfo);
 Object setFieldValue(HBaseColumnInfo hBaseColumnInfo, Result result);
 ```
 ### Demo Code
-The demo code assumes you have HBase installed on your local host or via Docker (I used <a href="https://github.com/dajobe/hbase-docker" target="_blank">dajobe/hbase</a> personally, you can pull it directly from Docker Hub).
+The demo code assumes you have HBase installed on your local host or via Docker (I used <a href="https://github.com/dajobe/hbase-docker" target="_blank">dajobe/hbase</a> personally, you can pull it directly from Docker Hub).  I used IntelliJ for IDE, open up the **demo** project, it references the **hbase-pal** module.
 
 Once you've setup your HBase, you need to run the demo application initially with a program argument of **--spring.profiles.active=init** for it to go through with the Sales table creation and data population (remember to remove the argument on subsequent runs). The sample includes a Swagger UI so you can test it by invoking <a href="http://localhost:8888/swagger-ui.html" target="_blank">http://localhost:8888/swagger-ui.html</a> from your browser.
