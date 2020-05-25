@@ -14,6 +14,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
@@ -38,8 +39,8 @@ public final class HBaseUtil {
         ToBytes.put(Short.class, o -> Bytes.toBytes((Short) o));
         ToBytes.put(short.class, o -> Bytes.toBytes((short) o));
         ToBytes.put(BigDecimal.class, o -> Bytes.toBytes((BigDecimal) o));
-        ToBytes.put(LocalDateTime.class, o -> Bytes.toBytes(((LocalDateTime) o)
-                .atZone(ZoneOffset.UTC).toInstant().toEpochMilli()));
+        ToBytes.put(LocalDate.class, o -> Bytes.toBytes(((LocalDate)o).toEpochDay()));
+        ToBytes.put(LocalDateTime.class, o -> Bytes.toBytes(((LocalDateTime) o).toInstant(ZoneOffset.UTC).toEpochMilli()));
     }
 
     private static Map<Class<?>, Function<byte[], Object>> FromBytes;
@@ -59,6 +60,7 @@ public final class HBaseUtil {
         FromBytes.put(Short.class, Bytes::toShort);
         FromBytes.put(short.class, Bytes::toShort);
         FromBytes.put(BigDecimal.class, Bytes::toBigDecimal);
+        FromBytes.put(LocalDate.class, b -> LocalDate.ofInstant(Instant.ofEpochMilli(Bytes.toLong(b)), ZoneOffset.UTC));
         FromBytes.put(LocalDateTime.class, b -> LocalDateTime
                 .ofInstant(Instant.ofEpochMilli(Bytes.toLong(b)), ZoneOffset.UTC));
     }
@@ -70,6 +72,10 @@ public final class HBaseUtil {
         return ToBytes.containsKey(value.getClass())
                 ? ToBytes.get(valueType).apply(value)
                 : null;
+    }
+
+    public static byte[] ToBytes(Object value) {
+        return ToBytes(value, value.getClass());
     }
 
     public static Object FromBytes(byte[] binValue, Class<?> valueType) {

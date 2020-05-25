@@ -10,14 +10,23 @@
 
 package org.gooseman.hbase;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.hadoop.hbase.TableName;
 
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface HBaseColumn {
-    String name() default "";
-    String family();
+public class HBaseInfo {
+
+    private TableName tableName;
+    private int salt;
+
+    public HBaseInfo(HBase hBase) {
+        this.tableName = TableName.valueOf(hBase.tableName());
+        this.salt = hBase.salt();
+    }
+
+    public TableName getTableName() {
+        return this.tableName;
+    }
+
+    public int getSalt() {
+        return salt;
+    }
 }

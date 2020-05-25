@@ -20,8 +20,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.gooseman.hbase.HBaseUtil.*;
-
 public abstract class HBaseRow {
 
     private Map<String, HBaseColumnInfo> hBaseColumnInfoMap;
@@ -35,27 +33,53 @@ public abstract class HBaseRow {
         }, field -> field.isAnnotationPresent(HBaseColumn.class));
     }
 
+    /**
+     * Returns the object's field and HBase column mapping information
+     * @return
+     */
+    @JsonIgnore
+    public final Map<String, HBaseColumnInfo> getHBaseColumnInfo() {
+        return hBaseColumnInfoMap;
+    }
+
     @JsonIgnore
     public abstract byte[] getKey(int salt);
 
     /**
      * Called after generating the Put from the fields decorated with @link org.gooseman.hbase.HBaseColumn} class.
      * @param put
-     * @param hBaseColumnInfoMap
      */
-    public void onAfterPut(Put put, final Map<String, HBaseColumnInfo> hBaseColumnInfoMap) {
+    protected void onAfterPut(Put put) {
     }
 
     /**
      * Called after generating the Get from the fields decorated with @link org.gooseman.hbase.HBaseColumn} class.
      * @param get
-     * @param hBaseColumnInfoMap
      */
-    public void onAfterGet(Get get, final Map<String, HBaseColumnInfo> hBaseColumnInfoMap) {
+    protected void onAfterGet(Get get) {
     }
 
     /**
-     * Generates Put from the fields decorated with {@link org.gooseman.hbase.HBaseColumn} class.
+     * Sets the HBase column with the new binary array value.
+     * @param hBaseColumnInfo
+     * @return The value of the column
+     */
+    protected byte[] setColumnValue(HBaseColumnInfo hBaseColumnInfo) {
+        return null;
+    }
+
+    /**
+     * Sets the field value with the returned new value.
+     * @param hBaseColumnInfo
+     * @param result The HBase scan result
+     * @return The new value of the field
+     */
+    protected Object setFieldValue(HBaseColumnInfo hBaseColumnInfo, Result result) {
+        return null;
+    }
+
+    /**
+     * Generates Put from the fields decorated with {@link HBaseColumn} class.
      * @param salt
      * @return
      * @throws Exception
@@ -66,20 +90,23 @@ public abstract class HBaseRow {
 
         for(Map.Entry<String, HBaseColumnInfo> entry : hBaseColumnInfoMap.entrySet()) {
             Field field = entry.getValue().getDecoratedField();
-            byte[] value = ToBytes(field.get(this), field.getType());
-            if (value == null) {
-                throw new Exception("Unsupported field data type");
+            byte[] newColumnValue = setColumnValue(entry.getValue());
+            if (newColumnValue == null) {
+                put.addColumn(entry.getValue().getBinFamily(), entry.getValue().getBinName(),
+                        HBaseUtil.ToBytes(field.get(this), field.getType()));
+            } else {
+                put.addColumn(entry.getValue().getBinFamily(), entry.getValue().getBinName(),
+                        newColumnValue);
             }
-            put.addColumn(entry.getValue().getBinFamily(), entry.getValue().getBinName(), value);
         }
 
-        onAfterPut(put, hBaseColumnInfoMap);
+        onAfterPut(put);
 
         return put;
     }
 
     /**
-     * Generates Get from the fields decorated with {@link org.gooseman.hbase.HBaseColumn} class.
+     * Generates Get from the fields decorated with {@link HBaseColumn} class.
      * @param salt
      * @return
      */
@@ -90,13 +117,13 @@ public abstract class HBaseRow {
         hBaseColumnInfoMap.forEach((s, hBaseColumnInfo) -> get.addColumn(hBaseColumnInfo.getBinFamily(),
                 hBaseColumnInfo.getBinName()));
 
-        onAfterGet(get, hBaseColumnInfoMap);
+        onAfterGet(get);
 
         return get;
     }
 
     /**
-     * Update fields decorated with {@link org.gooseman.hbase.HBaseColumn} with values from HBase {@link Result}
+     * Update fields decorated with {@link HBaseColumn} with values from HBase {@link Result}
      * @param result
      */
     void updateFieldsFromResult(Result result) throws IllegalAccessException {
@@ -105,7 +132,12 @@ public abstract class HBaseRow {
             if (result.containsColumn(ci.getBinFamily(), ci.getBinName())) {
                 Field field = ci.getDecoratedField();
                 byte[] value = result.getValue(ci.getBinFamily(), ci.getBinName());
-                field.set(this, FromBytes(value, field.getType()));
+                Object newValue = setFieldValue(ci, result);
+                if (newValue == null) {
+                    field.set(this, HBaseUtil.FromBytes(value, field.getType()));
+                } else {
+                    field.set(this, newValue);
+                }
             }
         }
     }

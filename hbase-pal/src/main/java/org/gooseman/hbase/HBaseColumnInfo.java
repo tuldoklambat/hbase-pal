@@ -14,7 +14,7 @@ import static org.apache.hadoop.hbase.util.Bytes.*;
 
 import java.lang.reflect.Field;
 
-class HBaseColumnInfo {
+public class HBaseColumnInfo {
 
     private byte[] binName;
     private byte[] binFamily;

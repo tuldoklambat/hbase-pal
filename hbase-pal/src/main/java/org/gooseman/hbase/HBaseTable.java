@@ -41,6 +41,14 @@ public class HBaseTable<T extends HBaseRow> implements Closeable {
     }
 
     /**
+     * Gets the HBase information as specified in the {@link HBase} decoration.
+     * @return
+     */
+    public HBaseInfo getHBaseInfo() {
+        return hBaseInfo;
+    }
+
+    /**
      * Saves the list of {@link T} to the HBase table specified in the {@link HBase} decoration.
      * @param hBaseRows
      * @return
@@ -63,12 +71,25 @@ public class HBaseTable<T extends HBaseRow> implements Closeable {
         try(ResultScanner resultScanner = hBaseTable.getScanner(scan)) {
             List<T> results = new ArrayList<>();
             for(Result result : resultScanner) {
-                T instance = getInstance();
+                T instance = createRowInstance();
                 instance.updateFieldsFromResult(result);
                 results.add(instance);
             }
             return results;
         }
+    }
+
+    /**
+     * Fetch a list of {@link T} given a start row and stop row
+     * @param startRow
+     * @param stopRow
+     * @return
+     * @throws Exception
+     */
+    public List<T> fetch(T startRow, T stopRow) throws Exception {
+        return fetch(new Scan()
+                .withStartRow(startRow.getKey(hBaseInfo.getSalt()))
+                .withStartRow(stopRow.getKey(hBaseInfo.getSalt())));
     }
 
     /**
@@ -83,7 +104,7 @@ public class HBaseTable<T extends HBaseRow> implements Closeable {
                 Spliterator.ORDERED);
         return StreamSupport.stream(spliterator, false).map(r -> {
             try {
-                T instance = getInstance();
+                T instance = createRowInstance();
                 instance.updateFieldsFromResult(r);
                 return instance;
             } catch (Exception e) {
@@ -110,7 +131,7 @@ public class HBaseTable<T extends HBaseRow> implements Closeable {
         }
     }
 
-    private T getInstance() throws Exception {
+    public T createRowInstance() throws Exception {
         return subClassType.getDeclaredConstructor().newInstance();
     }
 }
