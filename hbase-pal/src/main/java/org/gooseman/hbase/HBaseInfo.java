@@ -14,8 +14,8 @@ import org.apache.hadoop.hbase.TableName;
 
 public class HBaseInfo {
 
-    private TableName tableName;
-    private int salt;
+    private final TableName tableName;
+    private final int salt;
 
     public HBaseInfo(HBase hBase) {
         this.tableName = TableName.valueOf(hBase.tableName());

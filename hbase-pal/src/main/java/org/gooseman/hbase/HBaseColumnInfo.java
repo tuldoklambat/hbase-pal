@@ -16,9 +16,9 @@ import java.lang.reflect.Field;
 
 public class HBaseColumnInfo {
 
-    private byte[] binName;
-    private byte[] binFamily;
-    private Field decoratedField;
+    private final byte[] binName;
+    private final byte[] binFamily;
+    private final Field decoratedField;
 
     public HBaseColumnInfo(HBaseColumn hBaseColumn, Field field) {
         binName = toBytes(hBaseColumn.name().isEmpty() ? field.getName() : hBaseColumn.name());

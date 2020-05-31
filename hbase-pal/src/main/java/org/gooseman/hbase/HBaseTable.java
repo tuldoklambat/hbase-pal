@@ -22,9 +22,10 @@ import java.util.stream.StreamSupport;
 
 public class HBaseTable<T extends HBaseRow> implements Closeable {
 
-    private Class<T> subClassType;
+    private final Class<T> subClassType;
+    private final HBaseInfo hBaseInfo;
+
     private Table hBaseTable;
-    private HBaseInfo hBaseInfo;
 
     protected HBaseTable(Class<T> subClassType) throws Exception {
         if (!subClassType.isAnnotationPresent(HBase.class)) {

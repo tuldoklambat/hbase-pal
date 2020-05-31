@@ -22,7 +22,7 @@ import java.util.Map;
 
 public abstract class HBaseRow {
 
-    private Map<String, HBaseColumnInfo> hBaseColumnInfoMap;
+    private final Map<String, HBaseColumnInfo> hBaseColumnInfoMap;
 
     protected HBaseRow() {
         hBaseColumnInfoMap = new HashMap<>();
