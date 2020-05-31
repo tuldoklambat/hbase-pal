@@ -26,18 +26,24 @@ public class HBaseTable<T extends HBaseRow> implements Closeable {
     private Table hBaseTable;
     private HBaseInfo hBaseInfo;
 
-    public HBaseTable(Class<T> subClassType, Connection hBaseConnection) throws Exception {
+    protected HBaseTable(Class<T> subClassType) throws Exception {
         if (!subClassType.isAnnotationPresent(HBase.class)) {
             throw new Exception("Class must be decorated with @HBase");
         }
         this.hBaseInfo = new HBaseInfo(subClassType.getAnnotation(HBase.class));
         this.subClassType = subClassType;
-        this.hBaseTable = hBaseConnection.getTable(this.hBaseInfo.getTableName());
+    }
+
+    protected HBaseTable<T> init(Connection connection) throws IOException {
+        this.hBaseTable = connection.getTable(hBaseInfo.getTableName());
+        return this;
     }
 
     @Override
     public void close() throws IOException {
-        hBaseTable.close();
+        if (hBaseTable != null) {
+            hBaseTable.close();
+        }
     }
 
     /**

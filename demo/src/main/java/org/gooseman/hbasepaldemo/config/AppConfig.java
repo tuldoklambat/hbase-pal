@@ -1,7 +1,6 @@
 package org.gooseman.hbasepaldemo.config;
 
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.gooseman.hbase.HBaseClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,10 +13,5 @@ public class AppConfig {
         hBaseConfig.set("hbase.zookeeper.property.clientPort", "2181");
         hBaseConfig.set("hbase.zookeeper.quorom", "127.0.0.1");
         return hBaseConfig;
-    }
-
-    @Bean
-    public HBaseClient getHBaseClient(org.apache.hadoop.conf.Configuration configuration) {
-        return new HBaseClient(configuration);
     }
 }

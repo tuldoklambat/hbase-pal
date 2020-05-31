@@ -1,7 +1,7 @@
 package org.gooseman.hbasepaldemo.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.PrefixFilter;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -20,17 +20,17 @@ import java.util.List;
 @RestController
 public class SalesController {
 
-    private HBaseClient hBaseClient;
+    private Configuration hBaseConfiguration;
 
     @Autowired
-    public SalesController(HBaseClient hBaseClient) {
-        this.hBaseClient = hBaseClient;
+    public SalesController(Configuration hBaseConfiguration) {
+        this.hBaseConfiguration = hBaseConfiguration;
     }
 
     @GetMapping("/salesByRegion")
     public List<Sales> getSalesByRegion(@RequestParam Region region) throws Exception {
-        try(Connection hBaseConnection = hBaseClient.openConnection()) {
-            try(HBaseTable<Sales> salesHBaseTable = new HBaseTable<>(Sales.class, hBaseConnection)) {
+        try(HBaseClient hBaseClient = new HBaseClient(hBaseConfiguration)) {
+            try(HBaseTable<Sales> salesHBaseTable = hBaseClient.getHBaseTable(Sales.class)) {
                 Scan scan = new Scan();
                 scan.setFilter(new PrefixFilter(Bytes.toBytes(region.getValue())));
                 return salesHBaseTable.fetch(scan);

@@ -32,14 +32,21 @@ public class Sales extends HBaseRow {
 ```
 Sample code to retrieve a list of Sales from HBase
 ```java
-try(Connection hBaseConnection = hBaseClient.openConnection()) {
-    try(HBaseTable<Sales> salesHBaseTable = new HBaseTable<>(Sales.class, hBaseConnection)) {
+try(HBaseClient hBaseClient = new HBaseClient(hBaseConfiguration)) {
+    try(HBaseTable<Sales> salesHBaseTable = hBaseClient.getHBaseTable<>(Sales.class)) {
         Scan scan = new Scan();
         List<Sales> sales = salesHBaseTable.fetch(scan);
     }
 }
 ```
 ## Features:
+#### Getting/Creating HBase Table
+```java
+// references an HBase table represented by an entity
+hBaseClient.getHBaseTable<>(Sales.class); 
+// creates an HBase table based on the metadata specified in the entity
+hBaseClient.createHBase(Sales.class); 
+```
 #### Retrieval/persistence
 ```java
 // HBaseTable
