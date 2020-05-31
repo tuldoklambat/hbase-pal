@@ -91,12 +91,16 @@ public abstract class HBaseRow {
         for(Map.Entry<String, HBaseColumnInfo> entry : hBaseColumnInfoMap.entrySet()) {
             Field field = entry.getValue().getDecoratedField();
             byte[] newColumnValue = setColumnValue(entry.getValue());
-            if (newColumnValue == null) {
-                put.addColumn(entry.getValue().getBinFamily(), entry.getValue().getBinName(),
-                        HBaseUtil.ToBytes(field.get(this), field.getType()));
-            } else {
+            // if user customized value
+            if (newColumnValue != null) {
                 put.addColumn(entry.getValue().getBinFamily(), entry.getValue().getBinName(),
                         newColumnValue);
+            } else {
+                // get the actual field value, if it's null do not add it
+                byte[] fieldBytesValue = HBaseUtil.ToBytes(field.get(this), field.getType());
+                if (fieldBytesValue != null) {
+                    put.addColumn(entry.getValue().getBinFamily(), entry.getValue().getBinName(), fieldBytesValue);
+                }
             }
         }
 

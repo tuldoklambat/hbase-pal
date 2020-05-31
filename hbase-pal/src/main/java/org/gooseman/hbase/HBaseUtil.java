@@ -69,7 +69,7 @@ public final class HBaseUtil {
     }
 
     public static byte[] ToBytes(Object value, Class<?> valueType) {
-        return ToBytes.containsKey(value.getClass())
+        return value != null && ToBytes.containsKey(valueType)
                 ? ToBytes.get(valueType).apply(value)
                 : null;
     }
