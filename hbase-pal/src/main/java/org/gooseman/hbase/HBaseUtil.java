@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public final class HBaseUtil {
-    private static Map<Class<?>, Function<Object, byte[]>> ToBytes;
+    private static final Map<Class<?>, Function<Object, byte[]>> ToBytes;
     static {
         ToBytes = new HashMap<>();
         ToBytes.put(String.class, o -> Bytes.toBytes((String) o));
@@ -43,7 +43,7 @@ public final class HBaseUtil {
         ToBytes.put(LocalDateTime.class, o -> Bytes.toBytes(((LocalDateTime) o).toInstant(ZoneOffset.UTC).toEpochMilli()));
     }
 
-    private static Map<Class<?>, Function<byte[], Object>> FromBytes;
+    private static final Map<Class<?>, Function<byte[], Object>> FromBytes;
     static {
         FromBytes = new HashMap<>();
         FromBytes.put(String.class, Bytes::toString);
