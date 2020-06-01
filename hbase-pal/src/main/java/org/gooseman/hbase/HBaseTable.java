@@ -96,7 +96,7 @@ public class HBaseTable<T extends HBaseRow> implements Closeable {
     public List<T> fetch(T startRow, T stopRow) throws Exception {
         return fetch(new Scan()
                 .withStartRow(startRow.getKey(hBaseInfo.getSalt()))
-                .withStartRow(stopRow.getKey(hBaseInfo.getSalt())));
+                .withStopRow(stopRow.getKey(hBaseInfo.getSalt())));
     }
 
     /**
