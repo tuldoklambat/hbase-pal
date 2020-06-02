@@ -3,6 +3,7 @@ package org.gooseman.hbasepaldemo.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.PrefixFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.gooseman.hbase.HBaseClient;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -32,7 +34,15 @@ public class SalesController {
         try(HBaseClient hBaseClient = new HBaseClient(hBaseConfiguration)) {
             try(HBaseTable<Sales> salesHBaseTable = hBaseClient.getHBaseTable(Sales.class)) {
                 Scan scan = new Scan();
-                scan.setFilter(new PrefixFilter(Bytes.toBytes(region.getValue())));
+
+                // search across distributed hbase regions
+                // assuming the salt indicates the number of hbase regions
+                FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ONE,
+                        salesHBaseTable.getHBaseInfo().getSaltStream()
+                                .map(b -> new PrefixFilter(Bytes.add(b, Bytes.toBytes(region.getValue()))))
+                                .collect(Collectors.toList()));
+
+                scan.setFilter(filterList);
                 return salesHBaseTable.fetch(scan);
             }
         }

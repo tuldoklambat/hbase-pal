@@ -19,5 +19,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HBase {
     String tableName() default "";
-    int salt() default 0;
+
+    /**
+     * A value greater than zero will enable the internal key salting algorithm
+     * @return
+     */
+    short salt() default 0;
 }

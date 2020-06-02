@@ -95,8 +95,8 @@ public class HBaseTable<T extends HBaseRow> implements Closeable {
      */
     public List<T> fetch(T startRow, T stopRow) throws Exception {
         return fetch(new Scan()
-                .withStartRow(startRow.getKey(hBaseInfo.getSalt()))
-                .withStopRow(stopRow.getKey(hBaseInfo.getSalt())));
+                .withStartRow(startRow.getSaltedKey(hBaseInfo.getSalt()))
+                .withStopRow(stopRow.getSaltedKey(hBaseInfo.getSalt())));
     }
 
     /**
@@ -128,7 +128,7 @@ public class HBaseTable<T extends HBaseRow> implements Closeable {
      */
     public void refresh(List<T> hBaseRows) throws Exception {
         Map<String, T> index = hBaseRows.stream().collect(
-                Collectors.toMap(k -> Bytes.toStringBinary(k.getKey(hBaseInfo.getSalt())), v -> v));
+                Collectors.toMap(k -> Bytes.toStringBinary(k.getSaltedKey(hBaseInfo.getSalt())), v -> v));
         List<Get> gets = hBaseRows.stream().map(r -> r.getGet(hBaseInfo.getSalt())).collect(Collectors.toList());
         for (Result result : hBaseTable.get(gets)) {
             T row = index.getOrDefault(Bytes.toStringBinary(result.getRow()), null);

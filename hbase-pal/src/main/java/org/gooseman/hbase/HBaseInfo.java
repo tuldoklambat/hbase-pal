@@ -11,22 +11,32 @@
 package org.gooseman.hbase;
 
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.util.Bytes;
+
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class HBaseInfo {
 
     private final TableName tableName;
-    private final int salt;
+    private final short salt;
+    private final Stream<byte[]> saltStream;
 
     public HBaseInfo(HBase hBase) {
         this.tableName = TableName.valueOf(hBase.tableName());
         this.salt = hBase.salt();
+        saltStream = IntStream.range(0, this.salt).boxed().map(i -> Bytes.toBytes(i.shortValue()));
     }
 
     public TableName getTableName() {
         return this.tableName;
     }
 
-    public int getSalt() {
+    public short getSalt() {
         return salt;
+    }
+
+    public Stream<byte[]> getSaltStream() {
+        return saltStream;
     }
 }

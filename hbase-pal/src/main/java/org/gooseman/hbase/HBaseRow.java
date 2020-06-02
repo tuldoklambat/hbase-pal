@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
@@ -43,7 +44,7 @@ public abstract class HBaseRow {
     }
 
     @JsonIgnore
-    public abstract byte[] getKey(int salt);
+    public abstract byte[] getKey();
 
     /**
      * Called after generating the Put from the fields decorated with @link org.gooseman.hbase.HBaseColumn} class.
@@ -60,6 +61,13 @@ public abstract class HBaseRow {
     }
 
     /**
+     * Allows for further processing of the result from HBase
+     * @param result
+     */
+    protected void onResult(Result result) {
+    }
+
+    /**
      * Sets the HBase column with the new binary array value.
      * @param hBaseColumnInfo
      * @return The value of the column
@@ -71,22 +79,21 @@ public abstract class HBaseRow {
     /**
      * Sets the field value with the returned new value.
      * @param hBaseColumnInfo
-     * @param result The HBase scan result
+     * @param binValue The column binary value
      * @return The new value of the field
      */
-    protected Object setFieldValue(HBaseColumnInfo hBaseColumnInfo, Result result) {
+    protected Object setFieldValue(HBaseColumnInfo hBaseColumnInfo, byte[] binValue) {
         return null;
     }
 
     /**
      * Generates Put from the fields decorated with {@link HBaseColumn} class.
-     * @param salt
      * @return
      * @throws Exception
      */
     @JsonIgnore
-    Put getPut(int salt) throws Exception {
-        Put put = new Put(getKey(salt));
+    Put getPut(short salt) throws Exception {
+        Put put = new Put(getSaltedKey(salt));
 
         for(Map.Entry<String, HBaseColumnInfo> entry : hBaseColumnInfoMap.entrySet()) {
             Field field = entry.getValue().getDecoratedField();
@@ -111,12 +118,11 @@ public abstract class HBaseRow {
 
     /**
      * Generates Get from the fields decorated with {@link HBaseColumn} class.
-     * @param salt
      * @return
      */
     @JsonIgnore
-    Get getGet(int salt) {
-        Get get = new Get(getKey(salt));
+    Get getGet(short salt) {
+        Get get = new Get(getSaltedKey(salt));
 
         hBaseColumnInfoMap.forEach((s, hBaseColumnInfo) -> get.addColumn(hBaseColumnInfo.getBinFamily(),
                 hBaseColumnInfo.getBinName()));
@@ -135,14 +141,23 @@ public abstract class HBaseRow {
             HBaseColumnInfo ci = entry.getValue();
             if (result.containsColumn(ci.getBinFamily(), ci.getBinName())) {
                 Field field = ci.getDecoratedField();
-                byte[] value = result.getValue(ci.getBinFamily(), ci.getBinName());
-                Object newValue = setFieldValue(ci, result);
+                byte[] binValue = result.getValue(ci.getBinFamily(), ci.getBinName());
+                Object newValue = setFieldValue(ci, binValue);
                 if (newValue == null) {
-                    field.set(this, HBaseUtil.FromBytes(value, field.getType()));
+                    field.set(this, HBaseUtil.FromBytes(binValue, field.getType()));
                 } else {
                     field.set(this, newValue);
                 }
             }
         }
+
+        onResult(result);
+    }
+
+    byte[] getSaltedKey(short salt) {
+        byte[] key = getKey();
+        return salt > 0
+                ? Bytes.add(Bytes.toBytes(HBaseUtil.getSaltedHashValue(key, salt)), key)
+                : key;
     }
 }

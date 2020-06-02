@@ -12,7 +12,7 @@ import org.gooseman.hbasepaldemo.util.RegionConverter;
 
 import java.time.LocalDate;
 
-@HBase(tableName = "Sales")
+@HBase(tableName = "Sales", salt = 32)
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class Sales extends HBaseRow {
@@ -82,17 +82,16 @@ public class Sales extends HBaseRow {
     }
 
     @Override
-    protected Object setFieldValue(HBaseColumnInfo hBaseColumnInfo, Result result) {
+    protected Object setFieldValue(HBaseColumnInfo hBaseColumnInfo, byte[] binValue) {
         if (hBaseColumnInfo.getDecoratedField().getName().equals("region")) {
-            String regionValue = Bytes.toString(result.getValue(hBaseColumnInfo.getBinFamily(),
-                    hBaseColumnInfo.getBinName()));
+            String regionValue = Bytes.toString(binValue);
             return Region.convert(regionValue);
         }
         return null;
     }
 
     @Override
-    public byte[] getKey(int salt) {
+    public byte[] getKey() {
         return Bytes.add(Bytes.toBytes(region.getValue()), Bytes.toBytes(orderId));
     }
 }

@@ -58,14 +58,15 @@ void save(List<T> rows);    // saves a list of type T to HBase table
 #### Row Key Salting
 To support enterprise requirements to distribute rows across regions to avoid hot-spotting.
 ```java
+// if salt is specified, the internal salting algorithm
+// will prefix the result of the getKey with a salt
 @HBase(tableName = "Sales", salt = 8)
 .
 .
 .
 @Override
 public byte[] getKey(int salt) {
-    return Bytes.add(Bytes.toBytes(HBaseUtil.getSaltedHashValue(orderId, salt)),
-            Bytes.toBytes(orderId));
+    return Bytes.add(Bytes.toBytes(region.getValue()), Bytes.toBytes(orderId));
 }
 
 ```

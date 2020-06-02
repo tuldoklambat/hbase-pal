@@ -84,7 +84,7 @@ public final class HBaseUtil {
                 : null;
     }
 
-    public static int getSaltedHashValue(Object value, int salt) {
-        return Math.abs(value.hashCode() % salt);
+    public static short getSaltedHashValue(Object value, short salt) {
+        return (short) Math.abs(value.hashCode() % salt);
     }
 }
