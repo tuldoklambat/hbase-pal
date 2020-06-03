@@ -86,7 +86,10 @@ For cases where you have a field type that cannot be converted to and from a bin
 ```java
 // HBaseRow
 byte[] setColumnValue(HBaseColumnInfo hBaseColumnInfo);
-Object setFieldValue(HBaseColumnInfo hBaseColumnInfo, Result result);
+Object setFieldValue(HBaseColumnInfo hBaseColumnInfo, byte[] binValue);
+
+// When you want to do more with the result
+void onResult(Result result);
 ```
 ### Demo Code
 The demo code assumes you have HBase installed on your local host or via Docker (I used <a href="https://github.com/dajobe/hbase-docker" target="_blank">dajobe/hbase</a> personally, you can pull it directly from Docker Hub).  I used IntelliJ for IDE, open up the **demo** project, it references the **hbase-pal** module.
