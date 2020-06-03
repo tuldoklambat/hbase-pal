@@ -10,17 +10,22 @@
 
 package org.gooseman.hbase;
 
-import static org.apache.hadoop.hbase.util.Bytes.*;
-
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+
+import static org.apache.hadoop.hbase.util.Bytes.toBytes;
 
 public class HBaseColumnInfo {
 
     private final byte[] binName;
     private final byte[] binFamily;
     private final Field decoratedField;
+    private final HBaseColumn hBaseColumn;
+
+    private HBaseColumnConverter hBaseColumnConverter;
 
     public HBaseColumnInfo(HBaseColumn hBaseColumn, Field field) {
+        this.hBaseColumn = hBaseColumn;
         binName = toBytes(hBaseColumn.name().isEmpty() ? field.getName() : hBaseColumn.name());
         binFamily = toBytes(hBaseColumn.family());
         decoratedField = field;
@@ -36,5 +41,13 @@ public class HBaseColumnInfo {
 
     public Field getDecoratedField() {
         return decoratedField;
+    }
+
+    public HBaseColumnConverter getHBaseColumnConverter() throws NoSuchMethodException, IllegalAccessException,
+            InvocationTargetException, InstantiationException {
+        if (hBaseColumnConverter == null) {
+            hBaseColumnConverter = hBaseColumn.converter().getDeclaredConstructor().newInstance();
+        }
+        return hBaseColumnConverter;
     }
 }

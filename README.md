@@ -74,22 +74,22 @@ public byte[] getKey(int salt) {
 ```java
 @HbaseColumn(name = "columnName", family = "f")
 ```
-#### Get and put enrichment
-For additional columns you want to push/pull from HBase without mapping them to fields.
+#### Get/put enrichment and HBase result access
+For additional columns you want to push/pull from HBase without mapping them to fields you can override the onAfterGet and onAfterPut methods.  When you want access to the HBase result override onResult.
 ```java
-// HBaseRow
+// HBaseRow Methods
 void onAfterGet(Get get);
 void onAfterPut(Put put);
-```
-#### Custom field processing
-For cases where you have a field type that cannot be converted to and from a binary array e.g. enumerations.
-```java
-// HBaseRow
-byte[] setColumnValue(HBaseColumnInfo hBaseColumnInfo);
-Object setFieldValue(HBaseColumnInfo hBaseColumnInfo, byte[] binValue);
-
-// When you want to do more with the result
 void onResult(Result result);
+
+```
+#### Custom field converters
+For cases where you have a field data type that cannot be directly converted to and from a binary array e.g. enumerations, you can extend HBaseColumnConverter to customize conversion of your field.
+```java
+// Region is an enumeration and RegionColumnConvert converts the
+// Region enumeration to  byte array and vice-versa
+@HBaseColumn(converter = RegionColumnConverter.class)
+private Region region;
 ```
 ### Demo Code
 The demo code assumes you have HBase installed on your local host or via Docker (I used <a href="https://github.com/dajobe/hbase-docker" target="_blank">dajobe/hbase</a> personally, you can pull it directly from Docker Hub).  I used IntelliJ for IDE, open up the **demo** project, it references the **hbase-pal** module.

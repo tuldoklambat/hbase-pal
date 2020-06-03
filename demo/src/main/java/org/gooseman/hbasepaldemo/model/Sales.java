@@ -4,10 +4,12 @@ import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvCustomBindByName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.gooseman.hbase.*;
+import org.gooseman.hbase.HBase;
+import org.gooseman.hbase.HBaseColumn;
+import org.gooseman.hbase.HBaseRow;
 import org.gooseman.hbasepaldemo.util.LocalDateConverter;
+import org.gooseman.hbasepaldemo.util.RegionColumnConverter;
 import org.gooseman.hbasepaldemo.util.RegionConverter;
 
 import java.time.LocalDate;
@@ -17,7 +19,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = false)
 public class Sales extends HBaseRow {
 
-    @HBaseColumn
+    @HBaseColumn(converter = RegionColumnConverter.class)
     @CsvCustomBindByName(column = "Region", converter = RegionConverter.class)
     private Region region;
 
@@ -72,23 +74,6 @@ public class Sales extends HBaseRow {
     @HBaseColumn
     @CsvBindByName(column = "Total Profit")
     private double totalProfit;
-
-    @Override
-    protected byte[] setColumnValue(HBaseColumnInfo hBaseColumnInfo) {
-        if (hBaseColumnInfo.getDecoratedField().getName().equals("region")) {
-            return HBaseUtil.ToBytes(region.getValue());
-        }
-        return null;
-    }
-
-    @Override
-    protected Object setFieldValue(HBaseColumnInfo hBaseColumnInfo, byte[] binValue) {
-        if (hBaseColumnInfo.getDecoratedField().getName().equals("region")) {
-            String regionValue = Bytes.toString(binValue);
-            return Region.convert(regionValue);
-        }
-        return null;
-    }
 
     @Override
     public byte[] getKey() {

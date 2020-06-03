@@ -20,4 +20,5 @@ import java.lang.annotation.Target;
 public @interface HBaseColumn {
     String name() default "";
     String family() default "d";  //d for data or default
+    Class<? extends HBaseColumnConverter> converter() default DefaultHBaseColumnConverter.class;
 }
