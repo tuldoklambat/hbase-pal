@@ -121,7 +121,7 @@ public abstract class HBaseRow {
     byte[] getSaltedRowKey(byte salt) {
         byte[] key = getRowKey();
         return salt > 0
-                ? Bytes.add(Bytes.toBytes(HBaseUtil.getSaltedHashValue(key, salt)), key)
+                ? Bytes.add(new byte[] { HBaseUtil.getSaltedHashValue(key, salt) }, key)
                 : key;
     }
 }

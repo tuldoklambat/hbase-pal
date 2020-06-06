@@ -11,7 +11,6 @@
 package org.gooseman.hbase;
 
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.util.Bytes;
 
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -26,7 +25,7 @@ public class HBaseInfo {
         this.tableName = TableName.valueOf(hBase.tableName());
         this.salt = hBase.salt();
 
-        saltStream = IntStream.range(0, this.salt).boxed().map(i -> Bytes.toBytes(String.valueOf((char)i.byteValue())));
+        saltStream = IntStream.range(0, this.salt).boxed().map(i -> new byte[] { i.byteValue()});
     }
 
     public TableName getTableName() {
