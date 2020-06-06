@@ -76,7 +76,7 @@ public class Sales extends HBaseRow {
     private double totalProfit;
 
     @Override
-    public byte[] getKey() {
+    public byte[] getRowKey() {
         return Bytes.add(Bytes.toBytes(region.getValue()), Bytes.toBytes(orderId));
     }
 }

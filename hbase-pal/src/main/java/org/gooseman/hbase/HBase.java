@@ -24,5 +24,5 @@ public @interface HBase {
      * A value greater than zero will enable the internal key salting algorithm
      * @return
      */
-    short salt() default 0;
+    byte salt() default 0;
 }

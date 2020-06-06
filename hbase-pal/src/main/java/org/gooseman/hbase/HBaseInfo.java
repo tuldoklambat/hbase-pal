@@ -19,20 +19,21 @@ import java.util.stream.Stream;
 public class HBaseInfo {
 
     private final TableName tableName;
-    private final short salt;
+    private final byte salt;
     private final Stream<byte[]> saltStream;
 
     public HBaseInfo(HBase hBase) {
         this.tableName = TableName.valueOf(hBase.tableName());
         this.salt = hBase.salt();
-        saltStream = IntStream.range(0, this.salt).boxed().map(i -> Bytes.toBytes(i.shortValue()));
+
+        saltStream = IntStream.range(0, this.salt).boxed().map(i -> Bytes.toBytes(String.valueOf((char)i.byteValue())));
     }
 
     public TableName getTableName() {
         return this.tableName;
     }
 
-    public short getSalt() {
+    public byte getSalt() {
         return salt;
     }
 

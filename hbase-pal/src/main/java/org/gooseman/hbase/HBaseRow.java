@@ -46,20 +46,20 @@ public abstract class HBaseRow {
     }
 
     @JsonIgnore
-    public abstract byte[] getKey();
+    public abstract byte[] getRowKey();
 
     /**
      * Called after generating the Put from the fields decorated with @link org.gooseman.hbase.HBaseColumn} class.
      * @param put
      */
-    protected void onAfterPut(Put put) {
+    protected void onPut(Put put) {
     }
 
     /**
      * Called after generating the Get from the fields decorated with @link org.gooseman.hbase.HBaseColumn} class.
      * @param get
      */
-    protected void onAfterGet(Get get) {
+    protected void onGet(Get get) {
     }
 
     /**
@@ -75,8 +75,8 @@ public abstract class HBaseRow {
      * @throws Exception
      */
     @JsonIgnore
-    Put getPut(short salt) throws Exception {
-        Put put = new Put(getSaltedKey(salt));
+    Put getPut(byte salt) throws Exception {
+        Put put = new Put(getSaltedRowKey(salt));
         for(Map.Entry<String, HBaseColumnInfo> entry : hBaseColumnInfoMap.entrySet()) {
             Field field = entry.getValue().getDecoratedField();
             byte[] binValue = entry.getValue().getHBaseColumnConverter().ToBytes(field.get(this), field.getType());
@@ -84,7 +84,7 @@ public abstract class HBaseRow {
                 put.addColumn(entry.getValue().getBinFamily(), entry.getValue().getBinName(), binValue);
             }
         }
-        onAfterPut(put);
+        onPut(put);
         return put;
     }
 
@@ -93,11 +93,11 @@ public abstract class HBaseRow {
      * @return
      */
     @JsonIgnore
-    Get getGet(short salt) {
-        Get get = new Get(getSaltedKey(salt));
+    Get getGet(byte salt) {
+        Get get = new Get(getSaltedRowKey(salt));
         hBaseColumnInfoMap.forEach((s, hBaseColumnInfo) -> get.addColumn(hBaseColumnInfo.getBinFamily(),
                 hBaseColumnInfo.getBinName()));
-        onAfterGet(get);
+        onGet(get);
         return get;
     }
 
@@ -118,8 +118,8 @@ public abstract class HBaseRow {
         onResult(result);
     }
 
-    byte[] getSaltedKey(short salt) {
-        byte[] key = getKey();
+    byte[] getSaltedRowKey(byte salt) {
+        byte[] key = getRowKey();
         return salt > 0
                 ? Bytes.add(Bytes.toBytes(HBaseUtil.getSaltedHashValue(key, salt)), key)
                 : key;

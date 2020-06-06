@@ -84,7 +84,9 @@ public final class HBaseUtil {
                 : null;
     }
 
-    public static short getSaltedHashValue(Object value, short salt) {
-        return (short) Math.abs(value.hashCode() % salt);
+    public static String getSaltedHashValue(Object value, byte salt) {
+        // converts the int result of modulo to char then to string
+        // to force HBase to decode this into an 8-bit (byte) value
+        return String.valueOf((char)Math.abs(value.hashCode() % salt));
     }
 }

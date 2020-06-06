@@ -25,7 +25,7 @@ public class Sales extends HBaseRow {
     private double unitCost;
     
     @Override
-    public byte[] getKey(int salt) {
+    public byte[] getKey() {
         return Bytes.toBytes(orderId);
     }
 }
@@ -59,13 +59,14 @@ void save(List<T> rows);    // saves a list of type T to HBase table
 To support enterprise requirements to distribute rows across regions to avoid hot-spotting.
 ```java
 // if salt is specified, the internal salting algorithm
-// will prefix the result of the getKey with a salt
+// will prefix the result of the getKey with a salt,
+// salt value can only be between 1-255
 @HBase(tableName = "Sales", salt = 8)
 .
 .
 .
 @Override
-public byte[] getKey(int salt) {
+public byte[] getKey() {
     return Bytes.add(Bytes.toBytes(region.getValue()), Bytes.toBytes(orderId));
 }
 
@@ -78,8 +79,8 @@ public byte[] getKey(int salt) {
 For additional columns you want to push/pull from HBase without mapping them to fields you can override the onAfterGet and onAfterPut methods.  When you want access to the HBase result override onResult.
 ```java
 // HBaseRow Methods
-void onAfterGet(Get get);
-void onAfterPut(Put put);
+void onGet(Get get);
+void onPut(Put put);
 void onResult(Result result);
 
 ```
