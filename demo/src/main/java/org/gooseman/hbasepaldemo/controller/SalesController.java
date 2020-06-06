@@ -31,7 +31,7 @@ public class SalesController {
     }
 
     @GetMapping("/salesByRegion")
-    public List<Sales> getSalesByRegion(@RequestParam Region region) throws Exception {
+    public List<Sales> getSalesByRegion(@RequestParam Region region, HttpServletResponse response) throws Exception {
         try(HBaseClient hBaseClient = new HBaseClient(hBaseConfiguration)) {
             try(HBaseTable<Sales> salesHBaseTable = hBaseClient.getHBaseTable(Sales.class)) {
                 Scan scan = new Scan();
@@ -44,7 +44,10 @@ public class SalesController {
                                 .collect(Collectors.toList()));
 
                 scan.setFilter(filterList);
-                return salesHBaseTable.fetch(scan);
+                List<Sales> sales = salesHBaseTable.fetch(scan);
+
+                response.addHeader("RowCount", String.valueOf(sales.size()));
+                return sales;
             }
         }
     }
