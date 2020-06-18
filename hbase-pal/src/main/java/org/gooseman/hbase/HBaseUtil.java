@@ -60,7 +60,7 @@ public final class HBaseUtil {
         FromBytes.put(Short.class, Bytes::toShort);
         FromBytes.put(short.class, Bytes::toShort);
         FromBytes.put(BigDecimal.class, Bytes::toBigDecimal);
-        FromBytes.put(LocalDate.class, b -> LocalDate.ofInstant(Instant.ofEpochMilli(Bytes.toLong(b)), ZoneOffset.UTC));
+        FromBytes.put(LocalDate.class, b -> LocalDate.ofEpochDay(Bytes.toLong(b)));
         FromBytes.put(LocalDateTime.class, b -> LocalDateTime
                 .ofInstant(Instant.ofEpochMilli(Bytes.toLong(b)), ZoneOffset.UTC));
     }
